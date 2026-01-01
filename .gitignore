@@ -1,14 +1,49 @@
-# env / secrets
+# =========================
+# Secrets & Env
+# =========================
 .env
+.env.*
 *.env
-*.env.*
 
-# data / large files
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+
+# =========================
+# Virtual Environments
+# =========================
+venv/
+.env/
+.venv/
+conda-env/
+.geo/
+
+# =========================
+# Generated reports & data
+# =========================
 reports/
-app/data/
-*.gpkg
-*.tif
-*.tiff
-*.mbtiles
-*.sqlite
-*.db
+app/reports/
+
+# große Geodaten / Binaries
+app/data/*.gpkg
+app/data/*.tif
+app/data/*.zip
+
+# =========================
+# OS / Editor
+# =========================
+.DS_Store
+.idea/
+.vscode/
+
+# =========================
+# Logs
+# =========================
+*.log
