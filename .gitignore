@@ -1,17 +1,14 @@
-# secrets / env
+# env / secrets
 .env
-.env.*
 *.env
 *.env.*
-STRIPE_SECRET_KEY.env.txt
 
-# reports & generated files
+# data / large files
 reports/
-*.pdf
-
-# python caches
-__pycache__/
-*.pyc
-
-# mac
-.DS_Store
+app/data/
+*.gpkg
+*.tif
+*.tiff
+*.mbtiles
+*.sqlite
+*.db
