@@ -1,0 +1,17 @@
+# secrets / env
+.env
+.env.*
+*.env
+*.env.*
+STRIPE_SECRET_KEY.env.txt
+
+# reports & generated files
+reports/
+*.pdf
+
+# python caches
+__pycache__/
+*.pyc
+
+# mac
+.DS_Store

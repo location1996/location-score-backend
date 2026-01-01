@@ -1,0 +1,55 @@
+# --- Innenstadt / Hotspots ---
+Marienplatz Munich
+Alexanderplatz Berlin
+Domplatz Cologne
+Roemerberg Frankfurt am Main
+Marktplatz Stuttgart
+Rathausplatz Hamburg
+
+# --- Hauptbahnhöfe ---
+Munich Central Station
+Berlin Central Station
+Cologne Central Station
+Frankfurt Main Central Station
+Hamburg Central Station
+Stuttgart Central Station
+
+# --- Airports ---
+Munich Airport Terminal 2
+Berlin Brandenburg Airport Terminal 1
+Frankfurt Airport Terminal 1
+Hamburg Airport
+
+# --- Messe / Business ---
+Messe Munich
+Messe Berlin
+Messe Frankfurt
+Messe Duesseldorf
+
+# --- Retail ---
+Alstertal Shopping Centre Hamburg
+Olympia Shopping Centre Munich
+Centro Oberhausen
+Mall of Berlin
+
+# --- Autobahn / Raststaetten ---
+Raststaette Holzkirchen
+Raststaette Holzkirchen Sued
+Irschenberg Raststaette
+Service Area Vaterstetten A94
+Service Area Graefenhausen A5
+Service Area Lehrter See A2
+
+# --- Kleinstadt / Laendlich ---
+Garmisch Partenkirchen Station
+Rosenheim Station
+Weilheim Upper Bavaria Station
+Tegernsee Station
+Bad Toelz Station
+
+# --- Grenze / Spezial ---
+Konstanz Harbour
+Passau Central Station
+Goerlitz Station
+Flensburg Station
+Aachen Central Station

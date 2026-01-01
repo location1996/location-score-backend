@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+requests
+pydantic
+reportlab
+shapely
+rasterio
+geopandas
+pyproj
+stripe
+python-dotenv

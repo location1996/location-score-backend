@@ -1,0 +1,901 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Charging Location Check</title>
+
+  <style>
+    :root{
+      --bg: #0b0b0f;
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.62);
+      --border: rgba(255,255,255,0.12);
+      --shadow: 0 24px 70px rgba(0,0,0,0.55);
+      --accent: #0a84ff;
+      --danger: #ff453a;
+      --ok: #34c759;
+      --warn: #ffd60a;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Arial;
+      letter-spacing: 0.2px;
+      background:
+        radial-gradient(1200px 700px at 18% 0%, rgba(10,132,255,0.28), transparent 60%),
+        radial-gradient(900px 600px at 92% 18%, rgba(52,199,89,0.18), transparent 55%),
+        radial-gradient(700px 500px at 60% 95%, rgba(255,214,10,0.12), transparent 55%),
+        var(--bg);
+    }
+
+    .wrap{ max-width: 1020px; margin: 0 auto; padding: 54px 18px 34px; }
+    .top{ display:flex; justify-content: space-between; align-items:flex-start; gap: 18px; margin-bottom: 18px; }
+    h1{ margin:0; font-size: 30px; line-height: 1.1; font-weight: 760; letter-spacing: -0.2px; }
+    .subtitle{ margin-top: 10px; color: var(--muted); font-size: 14px; line-height: 1.45; max-width: 640px; }
+
+    .pill{
+      display:inline-flex; align-items:center; gap: 8px;
+      padding: 10px 12px; border: 1px solid var(--border);
+      background: rgba(255,255,255,0.05);
+      border-radius: 999px; color: var(--muted); font-size: 12px;
+      user-select:none; white-space: nowrap; backdrop-filter: blur(12px);
+    }
+
+    .grid{ display:grid; grid-template-columns: 1.25fr 0.75fr; gap: 16px; margin-top: 18px; }
+    .card{
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.085), rgba(255,255,255,0.04));
+      border-radius: 20px; box-shadow: var(--shadow);
+      padding: 18px; backdrop-filter: blur(16px);
+    }
+    .cardHeader{ display:flex; align-items:flex-start; justify-content: space-between; gap: 14px; margin-bottom: 10px; }
+    .cardTitle{ display:flex; flex-direction: column; gap: 4px; }
+    .cardTitle h2{
+      margin:0; font-size: 14px; font-weight: 800;
+      letter-spacing: 0.5px; text-transform: uppercase;
+      color: rgba(255,255,255,0.86);
+    }
+    .cardTitle .hint{ font-size: 12px; color: var(--muted); line-height: 1.35; }
+
+    label{ display:block; font-size: 13px; color: var(--muted); margin: 12px 0 6px; }
+    input[type="text"], input[type="number"], input[type="password"], select, textarea{
+  width: 100%;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(0,0,0,0.18);
+  color: var(--text);
+  outline: none;
+  font-size: 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.06s ease;
+}
+textarea{ resize: vertical; }
+    input:focus{ border-color: rgba(10,132,255,0.55); box-shadow: 0 0 0 4px rgba(10,132,255,0.12); }
+
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .seg{
+      display:flex; gap: 6px; padding: 6px;
+      border-radius: 16px; border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.04);
+    }
+    .seg button{
+      flex:1; border: 0; border-radius: 12px;
+      padding: 10px 10px; cursor:pointer; background: transparent;
+      color: rgba(255,255,255,0.78);
+      font-weight: 680; font-size: 13px;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.06s ease;
+      user-select:none;
+    }
+    .seg button:active{ transform: translateY(1px); }
+    .seg button.active{
+      background: rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.95);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+    }
+
+    details.advanced{
+      margin-top: 12px; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.035);
+      overflow:hidden;
+    }
+    details.advanced summary{
+      list-style:none; cursor:pointer; padding: 12px 12px;
+      display:flex; justify-content: space-between; align-items:center; gap: 10px;
+      user-select:none;
+    }
+    details.advanced summary::-webkit-details-marker{ display:none; }
+    .advLeft{ display:flex; flex-direction: column; gap: 2px; }
+    .advTitle{ font-size: 14px; font-weight: 720; color: rgba(255,255,255,0.9); }
+    .advDesc{ font-size: 12px; color: var(--muted); }
+    .chev{
+      width: 28px; height: 28px; border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      display:flex; align-items:center; justify-content:center;
+      color: rgba(255,255,255,0.75);
+      transition: transform 0.18s ease; flex: 0 0 auto;
+    }
+    details[open] .chev{ transform: rotate(180deg); }
+    .advBody{ padding: 0 12px 12px; }
+
+    .toggleRow{
+      display:flex; align-items:center; justify-content: space-between;
+      gap: 10px; padding: 12px; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04); margin-top: 12px;
+    }
+    .toggleRow .left{ display:flex; flex-direction: column; gap: 3px; }
+    .toggleRow .title{ font-size: 14px; font-weight: 720; color: rgba(255,255,255,0.92); }
+    .toggleRow .desc{ font-size: 12px; color: var(--muted); line-height: 1.3; }
+
+    .switch{ position: relative; width: 50px; height: 30px; }
+    .switch input{ display:none; }
+    .slider{
+      position:absolute; inset:0; background: rgba(255,255,255,0.16);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 999px; transition: 0.2s; cursor:pointer;
+    }
+    .slider:before{
+      content:""; position:absolute; height: 24px; width: 24px;
+      left: 3px; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.92);
+      border-radius: 999px; transition: 0.2s;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.35);
+    }
+    input:checked + .slider{ background: rgba(10,132,255,0.75); border-color: rgba(10,132,255,0.65); }
+    input:checked + .slider:before{ transform: translate(20px, -50%); }
+
+    .actions{ display:flex; gap: 10px; margin-top: 14px; }
+    button.primary, button.ghost, button.warnBtn{
+      border: 0; border-radius: 16px;
+      padding: 12px 14px; font-size: 14px; font-weight: 720;
+      cursor:pointer; transition: transform 0.06s ease, opacity 0.15s ease, filter 0.15s ease;
+      user-select:none;
+    }
+    button:active{ transform: translateY(1px); }
+    button:disabled{ cursor: not-allowed; opacity: 0.7; }
+
+    button.primary{ background: linear-gradient(180deg, rgba(10,132,255,1), rgba(10,132,255,0.84)); color: white; flex:1; }
+    button.primary:hover{ filter: brightness(1.05); }
+
+    button.ghost{
+      background: rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.86);
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+    button.warnBtn{
+      background: linear-gradient(180deg, rgba(255,214,10,1), rgba(255,214,10,0.78));
+      color: rgba(0,0,0,0.85);
+      border: 1px solid rgba(255,214,10,0.30);
+    }
+
+    .status{
+      margin-top: 12px; padding: 12px;
+      border-radius: 16px; border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+      color: var(--muted); font-size: 13px; line-height: 1.45;
+      min-height: 56px; display:flex; align-items:flex-start; gap: 10px;
+    }
+    .dot{
+      width: 10px; height: 10px; border-radius: 999px;
+      background: rgba(255,255,255,0.25);
+      box-shadow: 0 0 0 4px rgba(255,255,255,0.06);
+      flex: 0 0 auto; margin-top: 4px;
+    }
+    .dot.ok{ background: var(--ok); box-shadow: 0 0 0 4px rgba(52,199,89,0.16); }
+    .dot.warn{ background: var(--warn); box-shadow: 0 0 0 4px rgba(255,214,10,0.14); }
+    .dot.err{ background: var(--danger); box-shadow: 0 0 0 4px rgba(255,69,58,0.14); }
+    .dot.spin{
+      animation: pulse 1.2s infinite ease-in-out;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(10,132,255,0.14);
+    }
+    @keyframes pulse{
+      0%{ transform: scale(0.9); opacity: 0.6; }
+      50%{ transform: scale(1.15); opacity: 1; }
+      100%{ transform: scale(0.9); opacity: 0.6; }
+    }
+
+    .steps{
+      margin-top: 8px; display:flex; flex-wrap: wrap; gap: 8px;
+    }
+    .chip{
+      font-size: 12px; color: rgba(255,255,255,0.82);
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.05);
+      padding: 6px 10px; border-radius: 999px;
+      display:inline-flex; gap: 8px; align-items:center;
+    }
+    .chip .miniDot{ width: 7px; height: 7px; border-radius: 999px; background: rgba(255,255,255,0.20); }
+    .chip.done .miniDot{ background: var(--ok); }
+    .chip.active .miniDot{ background: var(--accent); }
+
+    .small{ color: var(--muted); font-size: 12px; margin-top: 10px; line-height: 1.45; }
+
+    .side .kpi{
+      padding: 12px; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.04);
+    }
+    .side .k{ font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+    .side .v{ font-size: 14px; font-weight: 720; color: rgba(255,255,255,0.92); line-height: 1.35; }
+
+    code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px; color: rgba(255,255,255,0.85);
+      background: rgba(255,255,255,0.06);
+      padding: 2px 6px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+
+    .divider{ height: 1px; background: rgba(255,255,255,0.10); margin: 14px 0; }
+
+    .kv{
+      display:grid; grid-template-columns: 120px 1fr;
+      gap: 8px 10px; font-size: 12px; color: rgba(255,255,255,0.86);
+      align-items:center;
+    }
+    .kv .k{ color: var(--muted); }
+    .kv .v{ color: rgba(255,255,255,0.92); overflow-wrap:anywhere; }
+
+    @media (max-width: 920px){ .grid{ grid-template-columns: 1fr; } .top{ flex-direction: column; } }
+    @media (max-width: 520px){ .row{ grid-template-columns: 1fr; } .kv{ grid-template-columns: 1fr; } }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>Charging Location Check</h1>
+        <div class="subtitle">
+          Sales-Flow: <b>Report anlegen → bezahlen (Admin) → PDF herunterladen</b>.
+          Profil wählen, optional Multi-Time (nur Pro).
+        </div>
+      </div>
+      <div class="pill">API: <span id="apiUrlText"></span></div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="cardHeader">
+          <div class="cardTitle">
+            <h2>Analyse</h2>
+            <div class="hint">Plan steuert Features: Multi-Time nur bei <b>Pro</b>.</div>
+          </div>
+        </div>
+
+        <label>Modus</label>
+<div class="seg" role="tablist" aria-label="Modus wählen">
+  <button type="button" class="active" data-mode="single">Single</button>
+  <button type="button" data-mode="compare">Compare</button>
+</div>
+
+<label for="address" style="margin-top:14px;">Adresse (Single)</label>
+<input id="address" type="text" placeholder="z.B. Marienplatz München" value="Marienplatz München" />
+
+<label for="addresses" id="compareLabel" style="margin-top:14px; display:none;">Adressen (Compare)</label>
+<textarea id="addresses" style="display:none; width:100%; min-height:120px; padding:12px 12px; border-radius:14px; border:1px solid rgba(255,255,255,0.14); background:rgba(0,0,0,0.18); color:var(--text); outline:none; font-size:14px;"
+  placeholder="One address per line (min. 2)&#10;Marienplatz München&#10;Karlsplatz München"></textarea>
+
+<div id="compareActions" class="actions" style="display:none;">
+  <button class="primary" id="compareBtn">Compare Standorte</button>
+  <button class="ghost" id="useBestBtn" disabled>Besten Standort übernehmen</button>
+</div>
+
+<div id="compareBox" class="status" style="display:none;">
+  <div class="dot" id="compareDot"></div>
+  <div style="flex:1">
+    <div id="compareText">Noch kein Vergleich ausgeführt.</div>
+    <div class="divider" style="margin:10px 0;"></div>
+    <div id="compareResults"></div>
+  </div>
+</div>
+        <label for="vertical" style="margin-top:14px;">Branche / Nische</label>
+        <select id="vertical">
+        <option value="ev_charging" selected>EV Charging</option>
+        </select>
+        <label>Profil</label>
+        <div class="seg" role="tablist" aria-label="Profil wählen">
+          <button type="button" class="active" data-profile="urban">Urban · 8</button>
+          <button type="button" data-profile="daily">Daily · 15</button>
+          <button type="button" data-profile="destination">Dest · 25</button>
+          <button type="button" data-profile="rural">Rural · 30</button>
+        </div>
+
+        <label style="margin-top:14px;">Plan</label>
+        <div class="seg" role="tablist" aria-label="Plan wählen">
+          <button type="button" class="active" data-plan="standard">Standard</button>
+          <button type="button" data-plan="express">Express</button>
+          <button type="button" data-plan="pro">Pro</button>
+        </div>
+
+        <details class="advanced" id="advanced">
+          <summary>
+            <div class="advLeft">
+              <div class="advTitle">Erweiterte Optionen</div>
+              <div class="advDesc">Minuten manuell setzen, Default wiederherstellen.</div>
+            </div>
+            <div class="chev">⌄</div>
+          </summary>
+          <div class="advBody">
+            <div class="row">
+              <div>
+                <label for="minutes">Minuten (überschreibt Profil)</label>
+                <input id="minutes" type="number" min="1" max="60" placeholder="z.B. 12" />
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <div class="small">Wenn leer, gilt das Profil (oben).</div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <div class="toggleRow">
+          <div class="left">
+            <div class="title">Multi-Time Vergleich</div>
+            <div class="desc" id="multiDesc">Zusätzlich 10/15/20 Minuten + Stabilität im PDF.</div>
+          </div>
+          <label class="switch" title="Multi-Time">
+            <input id="multi_time" type="checkbox" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="createBtn">Report anlegen</button>
+          <button class="ghost" id="resetBtn" title="Zurücksetzen">Reset</button>
+        </div>
+
+        <div class="status" id="statusBox">
+          <div class="dot" id="statusDot"></div>
+          <div style="flex:1">
+            <div id="statusText">Bereit.</div>
+            <div class="steps" id="steps">
+              <span class="chip" id="c1"><span class="miniDot"></span>Create</span>
+              <span class="chip" id="c2"><span class="miniDot"></span>Pay</span>
+              <span class="chip" id="c3"><span class="miniDot"></span>Download</span>
+            </div>
+          </div>
+        </div>
+
+        <details class="advanced" id="adminBox" style="margin-top:12px;">
+          <summary>
+            <div class="advLeft">
+              <div class="advTitle">Admin: Zahlung bestätigen</div>
+              <div class="advDesc">Nur für dich (ruft <code>/mark_paid</code> mit Token).</div>
+            </div>
+            <div class="chev">⌄</div>
+          </summary>
+          <div class="advBody">
+            <label for="adminToken">Admin Token (Header <code>x-admin-token</code>)</label>
+            <input id="adminToken" type="password" placeholder="change-me-super-secret" />
+            <div class="actions">
+              <button class="warnBtn" id="payBtn">Zahlung bestätigen</button>
+              <button class="ghost" id="downloadBtn">PDF herunterladen</button>
+            </div>
+            <div class="small">
+              Ablauf: erst <b>Report anlegen</b> → dann (nach Zahlung) <b>Zahlung bestätigen</b> → dann <b>PDF herunterladen</b>.
+            </div>
+          </div>
+        </details>
+
+        <div class="divider"></div>
+
+        <div class="kv">
+          <div class="k">Report ID</div>
+          <div class="v" id="reportIdText">—</div>
+
+          <div class="k">Status</div>
+          <div class="v" id="reportStatusText">—</div>
+
+          <div class="k">Plan</div>
+          <div class="v" id="planText">standard</div>
+
+          <div class="k">Vertical</div>
+          <div class="v" id="verticalText">ev_charging</div>
+        </div>
+
+        <div class="small" style="margin-top:12px;">
+          Hinweis: Wenn du aktuell nur <code>/analyze</code nutzt, funktioniert das hier erst,
+          nachdem dein Backend die neuen Endpoints hat: <code>/create_report</code>, <code>/mark_paid</code>, <code>/report</code>.
+        </div>
+      </div>
+
+      <div class="card side">
+        <div class="cardHeader">
+          <div class="cardTitle">
+            <h2>Quick Info</h2>
+            <div class="hint">Sales-Flow + Defaults.</div>
+          </div>
+        </div>
+
+        <div class="kpi">
+          <div class="k">Flow</div>
+          <div class="v">Create → Pay → Download</div>
+        </div>
+        <div style="height:10px"></div>
+
+        <div class="kpi">
+          <div class="k">Plan/Enforcement</div>
+          <div class="v"><b>Standard/Express:</b> Multi-Time aus · <b>Pro:</b> Multi-Time erlaubt</div>
+        </div>
+        <div style="height:10px"></div>
+
+        <div class="kpi">
+          <div class="k">Tipp</div>
+          <div class="v">Für echte Kunden ersetzt du “Admin Pay” später durch Stripe/Checkout.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ====== CONFIG ======
+  const API_BASE = "http://127.0.0.1:8000";
+  const API_CREATE   = `${API_BASE}/create_report`;
+  const API_MARKPAID = (id) => `${API_BASE}/mark_paid/${id}`;
+  const API_REPORT   = (id) => `${API_BASE}/report/${id}`;
+  const API_COMPARE  = `${API_BASE}/compare`;
+  const API_CREATE_COMPARE = `${API_BASE}/create_compare_report`;
+
+  const el = (id) => document.getElementById(id);
+  el("apiUrlText").textContent = API_BASE;
+
+  let activeProfile = "urban";
+  let activePlan = "standard";
+  let activeVertical = el("vertical")?.value || "ev_charging";
+  let currentReportId = null;
+  let currentStatus = null;
+  let activeMode = "single";
+  let lastCompareResults = [];
+
+  // ====== UI HELPERS ======
+  function setBusy(isBusy){
+  el("createBtn").disabled = isBusy;
+  el("resetBtn").disabled = isBusy;
+  el("payBtn").disabled = isBusy;
+  el("downloadBtn").disabled = isBusy;
+  el("compareBtn").disabled = isBusy;   // ✅ NEU
+}
+
+  function setStatus(type, text){
+    const dot = el("statusDot");
+    dot.className = "dot";
+    if(type === "ok") dot.classList.add("ok");
+    if(type === "warn") dot.classList.add("warn");
+    if(type === "err") dot.classList.add("err");
+    if(type === "spin") dot.classList.add("spin");
+    el("statusText").textContent = text;
+    setBusy(type === "spin");
+  }
+
+  function setCompareStatus(type, text){
+  const dot = el("compareDot");
+  dot.className = "dot";
+  if(type === "ok") dot.classList.add("ok");
+  if(type === "warn") dot.classList.add("warn");
+  if(type === "err") dot.classList.add("err");
+  if(type === "spin") dot.classList.add("spin");
+  el("compareText").textContent = text;
+}
+
+  function resetChips(){
+    ["c1","c2","c3"].forEach(id => {
+      const c = el(id);
+      c.classList.remove("done","active");
+    });
+  }
+  function chipActive(id){
+    resetChips();
+    el(id).classList.add("active");
+  }
+  function chipDone(id){
+    el(id).classList.remove("active");
+    el(id).classList.add("done");
+  }
+
+  function updateMetaUI(){
+  el("planText").textContent = activePlan;
+  el("verticalText").textContent = activeVertical; // 👈 NEU (nur wenn du es anzeigen willst)
+  el("reportIdText").textContent = currentReportId || "—";
+  el("reportStatusText").textContent = currentStatus || "—";
+}
+
+  function enforcePlanOnUI(){
+    const mt = el("multi_time");
+    const desc = el("multiDesc");
+
+    if(activePlan !== "pro"){
+      mt.checked = false;
+      mt.disabled = true;
+      desc.textContent = "Multi-Time ist nur im Pro-Plan verfügbar.";
+    }else{
+      mt.disabled = false;
+      desc.textContent = "Zusätzlich 10/15/20 Minuten + Stabilität im PDF.";
+    }
+  }
+
+  // ====== Segmented: Profile ======
+  document.querySelectorAll('[aria-label="Profil wählen"] button').forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll('[aria-label="Profil wählen"] button').forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeProfile = btn.dataset.profile;
+    });
+  });
+
+  // ====== Segmented: Plan ======
+  document.querySelectorAll('[aria-label="Plan wählen"] button').forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll('[aria-label="Plan wählen"] button').forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activePlan = btn.dataset.plan;
+      enforcePlanOnUI();
+      updateMetaUI();
+    });
+  });
+
+  // ====== Segmented: Mode (Single vs Compare) ======
+document.querySelectorAll('[aria-label="Modus wählen"] button').forEach(btn => {
+  btn.addEventListener("click", () => {
+    // Active State
+    document.querySelectorAll('[aria-label="Modus wählen"] button')
+      .forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
+    activeMode = btn.dataset.mode;
+    const isCompare = activeMode === "compare";
+
+    // Single vs Compare Felder
+    el("address").style.display = isCompare ? "none" : "block";
+    document.querySelector('label[for="address"]').style.display = isCompare ? "none" : "block";
+
+    el("compareLabel").style.display = isCompare ? "block" : "none";
+    el("addresses").style.display = isCompare ? "block" : "none";
+    el("compareActions").style.display = isCompare ? "flex" : "none";
+    el("compareBox").style.display = isCompare ? "flex" : "none";
+
+    // Sales Flow immer sichtbar
+el("createBtn").style.display = "inline-flex";
+el("adminBox").style.display  = "block";
+el("statusBox").style.display = "flex"; 
+
+    if (isCompare) {
+      setCompareStatus(
+        "ok",
+        "Compare-Modus aktiv. Mindestens 2 Adressen (eine pro Zeile) eingeben."
+      );
+      el("compareResults").innerHTML = "";
+    } else {
+      setStatus("ok", "Bereit.");
+    }
+  });
+});
+
+  // ====== Dropdown: Vertical (3.2) ======
+const verticalEl = el("vertical");
+if (verticalEl) {
+  verticalEl.addEventListener("change", (e) => {
+    activeVertical = e.target.value;
+    updateMetaUI(); // optional
+  });
+}
+
+  function buildPayload(){
+    const address = el("address").value.trim();
+    const minutesRaw = el("minutes").value;
+    const multi_time = el("multi_time").checked;
+
+    const payload = { address, multi_time, plan: activePlan, vertical: activeVertical };
+
+    if(minutesRaw !== "" && minutesRaw != null){
+      const m = parseInt(minutesRaw, 10);
+      if(Number.isNaN(m) || m < 1 || m > 60){
+        throw new Error("Minuten müssen eine Zahl zwischen 1 und 60 sein.");
+      }
+      payload.minutes = m;
+    } else {
+      payload.profile = activeProfile;
+    }
+
+    return payload;
+  }
+
+  function buildComparePayload(){
+  const raw = el("addresses").value || "";
+  const addresses = raw.split("\n").map(s => s.trim()).filter(Boolean);
+
+  if(addresses.length < 2){
+    throw new Error("Bitte mindestens 2 Adressen eingeben (eine pro Zeile).");
+  }
+
+  const minutesRaw = el("minutes").value;
+  const multi_time = el("multi_time").checked;
+
+  const payload = { addresses, vertical: activeVertical, multi_time, plan: activePlan };
+
+  if(minutesRaw !== "" && minutesRaw != null){
+    const m = parseInt(minutesRaw, 10);
+    if(Number.isNaN(m) || m < 1 || m > 60){
+      throw new Error("Minuten müssen eine Zahl zwischen 1 und 60 sein.");
+    }
+    payload.minutes = m;
+  } else {
+    payload.profile = activeProfile;
+  }
+
+  return payload;
+}
+
+function decisionFromScore(score){
+  const s = parseInt(score || 0, 10);
+  if(s >= 70) return "GO";
+  if(s >= 50) return "CHECK";
+  return "NO-GO";
+}
+
+async function compareLocations(){
+  let payload;
+  try { payload = buildComparePayload(); }
+  catch(e){ setCompareStatus("err", e.message || "Ungültige Eingabe."); return; }
+
+  setCompareStatus("spin", "Vergleich läuft …");
+  el("compareResults").innerHTML = "";
+
+  try{
+    const res = await fetch(API_COMPARE, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if(!res.ok){
+      let msg = `HTTP ${res.status}`;
+      try{ const txt = await res.text(); if(txt) msg += ` – ${txt.slice(0, 220)}`; }catch(e){}
+      throw new Error(msg);
+    }
+
+    const data = await res.json();
+    const results = data.results || [];
+    lastCompareResults = results;
+el("useBestBtn").disabled = results.length === 0;
+    if(results.length === 0){
+      setCompareStatus("warn", "Keine Ergebnisse zurückgegeben.");
+      return;
+    }
+
+    setCompareStatus("ok", `Vergleich fertig: ${results.length} Standorte.`);
+    el("compareResults").innerHTML = results.map((r, idx) => {
+      const stations = (r.stations ?? "—");
+      const pop = (r.population ?? "—");
+      return `
+        <div class="kpi" style="margin-bottom:10px;">
+          <div class="k">#${idx+1} · ${decisionFromScore(r.score)} · Score ${r.score}/100</div>
+          <div class="v" style="font-weight:720;">${r.address}</div>
+          <div class="small">Population: ${pop} · Stations: ${stations}</div>
+        </div>
+      `;
+    }).join("");
+
+  }catch(err){
+    console.error(err);
+    setCompareStatus("err", `Fehler: ${err.message || err}`);
+  }
+}
+
+  function downloadBlob(blob, filename){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ====== FLOW: CREATE ======
+  async function createReport(){
+  const isCompare = (activeMode === "compare");
+  let payload;
+
+  try{
+    payload = isCompare ? buildComparePayload() : buildPayload();
+  }catch(e){
+    setStatus("err", e.message || "Ungültige Eingabe.");
+    return;
+  }
+
+  const endpoint = isCompare ? API_CREATE_COMPARE : API_CREATE;
+
+  // Validierung je Modus
+  if(!isCompare && !payload.address){
+    setStatus("err", "Bitte eine Adresse eingeben.");
+    return;
+  }
+  if(isCompare && (!payload.addresses || payload.addresses.length < 2)){
+    setStatus("err", "Bitte mindestens 2 Adressen eingeben (eine pro Zeile).");
+    return;
+  }
+
+  setStatus("spin", isCompare ? "Compare-Report wird angelegt …" : "Report wird angelegt …");
+  resetChips(); chipActive("c1");
+
+  try{
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if(!res.ok){
+      let msg = `HTTP ${res.status}`;
+      try{ const txt = await res.text(); if(txt) msg += ` – ${txt.slice(0, 220)}`; }catch(e){}
+      throw new Error(msg);
+    }
+
+    const data = await res.json();
+    currentReportId = data.report_id;
+    currentStatus = data.status;
+    chipDone("c1"); chipActive("c2");
+
+    updateMetaUI();
+    setStatus("ok", `Report angelegt (${isCompare ? "COMPARE" : "SINGLE"}). Report ID: ${currentReportId}. (Status: ${currentStatus})`);
+
+    el("adminBox").open = true;
+
+  }catch(err){
+    console.error(err);
+    setStatus("err", `Fehler: ${err.message || err}`);
+    resetChips();
+  }
+}
+
+  // ====== FLOW: MARK PAID (ADMIN) ======
+  async function markPaid(){
+    if(!currentReportId){
+      setStatus("err", "Kein Report ID vorhanden. Erst 'Report anlegen' klicken.");
+      return;
+    }
+
+    const token = el("adminToken").value.trim();
+    if(!token){
+      setStatus("err", "Admin Token fehlt.");
+      return;
+    }
+
+    setStatus("spin", "Zahlung wird bestätigt …");
+    chipActive("c2");
+
+    try{
+      const res = await fetch(API_MARKPAID(currentReportId), {
+        method: "POST",
+        headers: { "x-admin-token": token },
+      });
+
+      if(!res.ok){
+        let msg = `HTTP ${res.status}`;
+        try{ const txt = await res.text(); if(txt) msg += ` – ${txt.slice(0, 220)}`; }catch(e){}
+        throw new Error(msg);
+      }
+
+      const data = await res.json();
+      currentStatus = data.status || "paid";
+      chipDone("c2"); chipActive("c3");
+      updateMetaUI();
+
+      setStatus("ok", `Zahlung bestätigt. Status: ${currentStatus}. Jetzt kannst du das PDF herunterladen.`);
+
+    }catch(err){
+      console.error(err);
+      setStatus("err", `Fehler: ${err.message || err}`);
+    }
+  }
+
+  // ====== FLOW: DOWNLOAD ======
+  async function downloadReport(){
+    if(!currentReportId){
+      setStatus("err", "Kein Report ID vorhanden.");
+      return;
+    }
+
+    setStatus("spin", "PDF wird geladen …");
+    chipActive("c3");
+
+    try{
+      const res = await fetch(API_REPORT(currentReportId), { method: "GET" });
+
+      if(!res.ok){
+        let msg = `HTTP ${res.status}`;
+        try{ const txt = await res.text(); if(txt) msg += ` – ${txt.slice(0, 220)}`; }catch(e){}
+        throw new Error(msg);
+      }
+
+      const blob = await res.blob();
+      const now = new Date();
+      const ts = now.toISOString().replaceAll(":","").slice(0, 15);
+      const filename = `report_${ts}_${activePlan}_${currentReportId}.pdf`;
+
+      downloadBlob(blob, filename);
+
+      chipDone("c3");
+      currentStatus = "delivered";
+      updateMetaUI();
+      setStatus("ok", `Download gestartet: ${filename}`);
+
+    }catch(err){
+      console.error(err);
+      setStatus("err", `Fehler: ${err.message || err}`);
+    }
+  }
+
+  function reset(){
+  el("address").value = "Marienplatz München";
+  el("vertical").value = "ev_charging";   // ✅ vertical (nicht vertcal)
+  activeVertical = "ev_charging";
+  el("minutes").value = "";
+  el("multi_time").checked = false;
+  el("addresses").value = "";
+  el("compareResults").innerHTML = "";   // ✅ kein "i" am Ende
+  
+
+    // reset segmented profile
+    activeProfile = "urban";
+    document.querySelectorAll('[aria-label="Profil wählen"] button').forEach(b => b.classList.remove("active"));
+    document.querySelector('[aria-label="Profil wählen"] button[data-profile="urban"]').classList.add("active");
+
+    // reset plan
+    activePlan = "standard";
+    document.querySelectorAll('[aria-label="Plan wählen"] button').forEach(b => b.classList.remove("active"));
+    document.querySelector('[aria-label="Plan wählen"] button[data-plan="standard"]').classList.add("active");
+
+    el("advanced").open = false;
+    el("adminBox").open = false;
+
+    currentReportId = null;
+    currentStatus = null;
+
+    enforcePlanOnUI();
+    updateMetaUI();
+    resetChips();
+    setStatus("ok", "Zurückgesetzt. Bereit.");
+  }
+
+  el("createBtn").addEventListener("click", createReport);
+  el("payBtn").addEventListener("click", markPaid);
+  el("downloadBtn").addEventListener("click", downloadReport);
+  el("resetBtn").addEventListener("click", reset);
+
+  el("compareBtn").addEventListener("click", compareLocations);
+
+el("useBestBtn").addEventListener("click", () => {
+  if(!lastCompareResults.length) return;
+
+  el("address").value = lastCompareResults[0].address; // bester Standort
+  document
+    .querySelector('[aria-label="Modus wählen"] button[data-mode="single"]')
+    .click();
+
+  setStatus("ok", "Bester Standort übernommen. Jetzt 'Report anlegen' klicken.");
+});
+
+el("address").addEventListener("keydown", (e) => {
+  if(e.key === "Enter") createReport();
+});
+
+  // init
+  resetChips();
+  enforcePlanOnUI();
+  updateMetaUI();
+  setStatus("ok", "Bereit.");
+</script>
+</body>
+</html>
