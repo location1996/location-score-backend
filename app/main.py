@@ -130,17 +130,12 @@ class CheckoutRequest(BaseModel):
 
 @app.post("/stripe/create_checkout_session")
 def create_checkout_session(body: CheckoutRequest):
-    # 1) Report muss existieren
-    meta = read_report_meta(REPORTS_DIR, body.report_id)
-    if not meta:
-        raise HTTPException(status_code=404, detail="Report not found")
-
-    # 2) Preis aus Mapping holen
+    # 1) Preis aus Mapping holen
     price_id = STRIPE_PRICES.get(body.plan)
     if not price_id:
         raise HTTPException(status_code=400, detail="Unknown plan")
 
-    # 3) Checkout Session erstellen + report_id als metadata setzen (WICHTIG!)
+    # 2) Checkout Session erstellen + report_id als metadata setzen
     session = stripe.checkout.Session.create(
         mode="payment",
         line_items=[{"price": price_id, "quantity": 1}],
@@ -150,7 +145,6 @@ def create_checkout_session(body: CheckoutRequest):
     )
 
     return JSONResponse({"url": session.url, "id": session.id})
-
 class LocationRequest(BaseModel):
     address: str
     vertical: str = "ev_charging"   # ⬅️ DAS ist die Zeile
